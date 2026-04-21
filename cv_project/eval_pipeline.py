@@ -25,7 +25,9 @@ DATASET_CONFIGS = {
 
 
 def to_yaml_path(path: Path) -> str:
-    return path.as_posix()
+    # 这里别偷懒只用 as_posix，在 Linux 上它不会替我们处理“字符串里本来就写死的反斜杠”。
+    # 直接统一替换成 /，这样 Windows 和 Linux 都更稳。
+    return str(path).replace("\\", "/")
 
 
 def get_project_root() -> Path:

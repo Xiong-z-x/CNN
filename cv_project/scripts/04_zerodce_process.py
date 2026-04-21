@@ -84,7 +84,15 @@ class ZeroDCEPPInferenceNet(nn.Module):
         x6 = self.relu(self.e_conv6(torch.cat([x2, x5], dim=1)))
         x_r = torch.tanh(self.e_conv7(torch.cat([x1, x6], dim=1)))
         if self.scale_factor != 1:
-            x_r = self.upsample(x_r)
+            # VOC 原图尺寸很杂，像 500x375 这种尺寸并不能被 12 整除。
+            # 如果这里偷懒只按 scale_factor 放大，最后就会得到 492 这种错位宽度。
+            # 直接对齐回输入图大小，才不会在后面的逐像素增强里撞 shape mismatch。
+            x_r = F.interpolate(
+                x_r,
+                size=x.shape[-2:],
+                mode="bilinear",
+                align_corners=False,
+            )
         enhanced = self.enhance(x, x_r)
         return enhanced, x_r
 

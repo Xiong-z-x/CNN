@@ -160,6 +160,24 @@ class TestRemainingPipelineFiles(unittest.TestCase):
         self.assertEqual(int(bgr_image[0, 0, 0]), 255)
         self.assertEqual(int(bgr_image[0, 1, 2]), 255)
 
+    def test_zerodce_forward_keeps_original_spatial_size_for_odd_shapes(self):
+        import torch
+
+        script_path = SCRIPTS_DIR / "04_zerodce_process.py"
+        module = load_module(script_path, "zerodce_process_odd_shape")
+        self.assertIsNotNone(module, "04 脚本还不能导入。")
+        self.assertTrue(
+            hasattr(module, "ZeroDCEPPInferenceNet"),
+            "04 脚本里缺少 ZeroDCEPPInferenceNet 这个推理网络。",
+        )
+
+        model = module.ZeroDCEPPInferenceNet(scale_factor=12)
+        image = torch.rand(1, 3, 375, 500, dtype=torch.float32)
+        enhanced, curves = model(image)
+
+        self.assertEqual(tuple(enhanced.shape), (1, 3, 375, 500))
+        self.assertEqual(tuple(curves.shape), (1, 3, 375, 500))
+
     def test_eval_script_and_yaml_configs_exist(self):
         eval_path = PROJECT_ROOT / "cv_project" / "eval_pipeline.py"
         module = load_module(eval_path, "eval_pipeline")
