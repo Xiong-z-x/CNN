@@ -26,6 +26,9 @@ python cv_project/eval_pipeline.py --dataset zdcepp --mode val --model yolo26n.p
 ```
 
 `Epoch99.pth` 建议放到 `cv_project/checkpoints/Zero-DCE++/Epoch99.pth`。
+如果你提前下好了 `VOCtrainval_06-Nov-2007.zip` 和 `VOCtest_06-Nov-2007.zip`，
+直接放到 `cv_project/datasets/VOC_Original/raw/`，`01` 脚本会优先本地解压。
+如果你也提前下好了检测器权重，建议放到 `cv_project/checkpoints/Ultralytics/`。
 
 ## 目录说明
 
@@ -39,3 +42,10 @@ python cv_project/eval_pipeline.py --dataset zdcepp --mode val --model yolo26n.p
   Zero-DCE++ 增强结果。
 - `config/*.yaml`
   三套独立数据配置，避免 `.cache` 串台。
+
+## 走本地权重的例子
+
+```bash
+python cv_project/eval_pipeline.py --dataset clahe --mode val --model cv_project/checkpoints/Ultralytics/yolov5su.pt
+python cv_project/eval_pipeline.py --dataset zdcepp --mode val --model cv_project/checkpoints/Ultralytics/yolo26n.pt
+```
