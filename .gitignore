@@ -1,0 +1,8 @@
+datasets/
+*.cache
+*.npy
+*.pt
+*.pth
+runs/
+yolo_out/
+__pycache__/
