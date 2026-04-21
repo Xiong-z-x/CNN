@@ -30,6 +30,38 @@ python cv_project/eval_pipeline.py --dataset zdcepp --mode val --model yolo26n.p
 直接放到 `cv_project/datasets/VOC_Original/raw/`，`01` 脚本会优先本地解压。
 如果你也提前下好了检测器权重，建议放到 `cv_project/checkpoints/Ultralytics/`。
 
+## AutoDL 一键脚本
+
+默认先跑“无训练版”全流程：
+
+```bash
+bash cv_project/run_autodl.sh
+```
+
+如果你只想先跑到推理和验证，不做训练，其实默认就是这样。
+
+如果你想顺手做少量微调：
+
+```bash
+RUN_TRAIN=1 EPOCHS=20 bash cv_project/run_autodl.sh
+```
+
+如果你这次只想跑 CLAHE 主线，先把 Zero-DCE++ 关掉：
+
+```bash
+RUN_ZDCEPP=0 bash cv_project/run_autodl.sh
+```
+
+常用开关：
+
+- `INSTALL_DEPS=1`：先装项目依赖，默认开启
+- `RUN_TESTS=1`：先跑最小测试，默认开启
+- `RUN_ZDCEPP=1`：是否跑 Zero-DCE++ 主线，默认开启
+- `RUN_VAL=1`：是否做验证，默认开启
+- `RUN_PREDICT=1`：是否额外导出预测可视化
+- `RUN_TRAIN=1`：是否做可选微调，默认关闭
+- `DEVICE=0`：GPU 卡号，想用 CPU 可以写成 `DEVICE=cpu`
+
 ## 目录说明
 
 - `datasets/VOC_Original`

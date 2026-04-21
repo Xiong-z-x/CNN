@@ -178,6 +178,16 @@ class TestRemainingPipelineFiles(unittest.TestCase):
             content = yaml_path.read_text(encoding="utf-8")
             self.assertNotIn("\\", content, f"{yaml_name} 里不该出现反斜杠路径。")
 
+    def test_autodl_launcher_exists_and_mentions_core_steps(self):
+        launcher_path = PROJECT_ROOT / "cv_project" / "run_autodl.sh"
+        self.assertTrue(launcher_path.exists(), "AutoDL 一键脚本还没创建。")
+        content = launcher_path.read_text(encoding="utf-8")
+        self.assertIn("01_voc_download_and_yolo.py", content)
+        self.assertIn("02_degradation.py", content)
+        self.assertIn("03_clahe_process.py", content)
+        self.assertIn("04_zerodce_process.py", content)
+        self.assertIn("eval_pipeline.py", content)
+
 
 if __name__ == "__main__":
     unittest.main()
