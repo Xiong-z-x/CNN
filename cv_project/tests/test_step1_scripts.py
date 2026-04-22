@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -195,6 +196,36 @@ class TestRemainingPipelineFiles(unittest.TestCase):
             self.assertTrue(yaml_path.exists(), f"{yaml_name} 还没创建。")
             content = yaml_path.read_text(encoding="utf-8")
             self.assertNotIn("\\", content, f"{yaml_name} 里不该出现反斜杠路径。")
+
+    def test_eval_script_can_materialize_dataset_yaml_with_absolute_root(self):
+        eval_path = PROJECT_ROOT / "cv_project" / "eval_pipeline.py"
+        module = load_module(eval_path, "eval_pipeline_materialize")
+        self.assertIsNotNone(module, "eval_pipeline.py 还不能导入。")
+        self.assertTrue(
+            hasattr(module, "materialize_dataset_yaml"),
+            "eval_pipeline.py 里缺少 materialize_dataset_yaml()。",
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            original_yaml = temp_root / "clahe.yaml"
+            original_yaml.write_text(
+                "path: ../datasets/VOC_CLAHE\ntrain: images/trainval\nval: images/test\n",
+                encoding="utf-8",
+            )
+            dataset_root = temp_root / "datasets" / "VOC_CLAHE"
+            dataset_root.mkdir(parents=True, exist_ok=True)
+
+            resolved_yaml = module.materialize_dataset_yaml(
+                source_yaml_path=original_yaml,
+                dataset_root=dataset_root,
+                output_dir=temp_root / "resolved",
+            )
+
+            self.assertTrue(resolved_yaml.exists())
+            content = resolved_yaml.read_text(encoding="utf-8")
+            self.assertIn(dataset_root.as_posix(), content)
+            self.assertIn("train: images/trainval", content)
 
     def test_autodl_launcher_exists_and_mentions_core_steps(self):
         launcher_path = PROJECT_ROOT / "cv_project" / "run_autodl.sh"

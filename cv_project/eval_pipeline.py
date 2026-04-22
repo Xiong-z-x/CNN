@@ -46,6 +46,29 @@ def get_dataset_info(dataset_name: str, project_root: Path) -> dict:
     }
 
 
+def materialize_dataset_yaml(source_yaml_path: Path, dataset_root: Path, output_dir: Path) -> Path:
+    # Ultralytics 有时会把相对 path 重新解释到它自己的 datasets 根目录。
+    # 这里临时写一份绝对路径版 yaml，省得它自作主张跑偏。
+    content = source_yaml_path.read_text(encoding="utf-8")
+    resolved_lines = []
+    saw_path = False
+
+    for line in content.splitlines():
+        if line.startswith("path:"):
+            resolved_lines.append(f"path: {to_yaml_path(dataset_root.resolve())}")
+            saw_path = True
+        else:
+            resolved_lines.append(line)
+
+    if not saw_path:
+        resolved_lines.insert(0, f"path: {to_yaml_path(dataset_root.resolve())}")
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    resolved_yaml_path = output_dir / source_yaml_path.name
+    resolved_yaml_path.write_text("\n".join(resolved_lines) + "\n", encoding="utf-8")
+    return resolved_yaml_path
+
+
 def remove_dataset_caches(dataset_root: Path) -> list[str]:
     removed_files = []
     for cache_path in dataset_root.rglob("*.cache"):
@@ -159,7 +182,12 @@ def run_one_dataset(args: argparse.Namespace, dataset_name: str) -> dict:
     model = YOLO(model_name)
 
     experiment_name = args.name or f"{dataset_name}_{args.mode}"
-    yaml_path_str = to_yaml_path(yaml_path.resolve())
+    resolved_yaml_path = materialize_dataset_yaml(
+        source_yaml_path=yaml_path,
+        dataset_root=dataset_root,
+        output_dir=args.project / "_resolved_dataset_yaml",
+    )
+    yaml_path_str = to_yaml_path(resolved_yaml_path.resolve())
 
     if args.mode == "val":
         results = model.val(
