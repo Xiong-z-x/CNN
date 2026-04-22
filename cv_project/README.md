@@ -81,21 +81,3 @@ RUN_ZDCEPP=0 bash cv_project/run_autodl.sh
 python cv_project/eval_pipeline.py --dataset clahe --mode val --model cv_project/checkpoints/Ultralytics/yolov5su.pt
 python cv_project/eval_pipeline.py --dataset zdcepp --mode val --model cv_project/checkpoints/Ultralytics/yolo26n.pt
 ```
-
-## 手写版基础方案
-
-如果你想更强调“自己理解了基础流程”，可以单独跑这份手写版脚本：
-
-```bash
-python cv_project/scripts/05_manual_baseline_clahe_yolov5su.py --max-images 10 --device 0
-```
-
-这份脚本里手动实现了这些环节：
-
-- 图片遍历和输入输出目录管理
-- CLAHE 增强
-- YOLO 结果解析
-- 边框和类别文字的手工绘制
-- 推理结果汇总 `manual_baseline_summary.json`
-
-它仍然使用官方 `yolov5su.pt` 作为检测器权重，但不再依赖 Ultralytics 默认的可视化输出，比较适合放在作业里展示基础学习过程。
