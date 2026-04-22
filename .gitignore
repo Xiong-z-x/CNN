@@ -6,3 +6,4 @@ datasets/
 runs/
 yolo_out/
 __pycache__/
+cv_project/analysis_results/
